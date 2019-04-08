@@ -114,6 +114,8 @@ if (buttonPushCounter > 0 ){
       } else {
       if(lock == 0 ){
             buttonPushCounter++;
+            Serial.print("number of button pushes: ");
+            Serial.println(buttonPushCounter);
       }
             }
       setActive = false;
@@ -129,13 +131,10 @@ if (buttonPushCounter > 0 ){
     lcd.print("   ");
         
         buttonPushCounter--;
-        Serial.println("--on");
         Serial.print("number of button pushes: ");
         Serial.println(buttonPushCounter);
-      } else {
-        Serial.println("-- off");
-      }
      }
+    }
     }
     }
   //0101010101010101010101010101010101010101010//
@@ -162,6 +161,7 @@ if (buttonPushCounter > 0 ){
       delay(250);
       lock = false;  
     }
+  
   } 
 
 void locking (){
