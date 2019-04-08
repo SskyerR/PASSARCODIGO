@@ -1,0 +1,174 @@
+#include <LiquidCrystal.h>
+
+byte Unlocked[] = {
+  B01110,
+  B10001,
+  B10000,
+  B11111,
+  B11011,
+  B11011,
+  B11111,
+  B00000
+};
+
+byte Locked[] = {
+  B01110,
+  B10001,
+  B10001,
+  B11111,
+  B11011,
+  B11011,
+  B11111,
+  B00000
+};
+
+  const int rs =A5, en = A4, d4 = A0, d5 = A1, d6 = A2, d7 = A3;
+  LiquidCrystal lcd(rs, en, d4, d5, d6, d7);
+
+  const int  buttonPin = 2;    
+  const int  pinButton = 3;
+  const int  lockButton= 4;  
+  const int ledPin = 13;       
+
+  boolean lock = false;
+  boolean setActive = false;
+  boolean longPressActive = false;
+  long setTimer = 0;
+  long longPressTime = 750;
+
+  int buttonPushCounter = 0;
+  int counter = -1; 
+  int buttonState = 0;    
+  int stateButton = 0; 
+  int lockstate = 0;  
+  int lastButtonState = 0;
+  int lastStateButton = 0;
+  int lastLockState = 0;              
+  int speakerOut=9;
+  int apito= 0;
+  int bapito =0;
+  int var = 0;
+
+  void setup() {
+
+    lcd.begin(16, 2);
+    lcd.createChar(1, Unlocked);
+    lcd.createChar(2, Locked);
+    pinMode(ledPin, OUTPUT);
+    pinMode(buttonPin, INPUT);
+    pinMode(pinButton, INPUT);
+    pinMode(lockButton, INPUT);
+    pinMode(speakerOut, OUTPUT);
+    lcd.home();
+    
+    
+    Serial.begin(9600);
+  }
+
+
+  void loop() {
+    lcd.setCursor(0, 0);
+    lcd.print("Blind Stop");
+    
+    lcd.setCursor(0, 1);
+    lcd.print("Contador:");
+    
+    lcd.setCursor(10, 1);
+    lcd.print(buttonPushCounter);
+    
+    lcd.setCursor(15, 1);
+    if (lock==0){
+      lcd.write(1);
+    }else{
+      lcd.write(2);
+      }
+
+    
+    buttonState = digitalRead(buttonPin);
+    stateButton = digitalRead(pinButton);
+    lockstate = digitalRead(lockButton);
+Serial.println(buttonState);
+
+  //+++++++++++++++++++++++++++++++++++++++++++//
+     if (digitalRead(buttonPin) == HIGH) {
+
+    if (setActive == false) {
+
+      setActive = true;
+      setTimer = millis();
+
+    }
+
+    if ((millis() - setTimer > longPressTime) && (longPressActive == false)) {
+
+      longPressActive = true;
+if (buttonPushCounter > 0 ){
+      lock = !lock; 
+    }
+    }
+  } else {
+    if (setActive == true) {
+      if (longPressActive == true) {
+        longPressActive = false;
+      
+      } else {
+      if(lock == 0 ){
+            buttonPushCounter++;
+      }
+            }
+      setActive = false;
+    }
+  }
+  //--------------------------------------------//
+    if (lock == 1){
+      if (buttonPushCounter > 0){
+    if (stateButton != lastStateButton) {
+      if (stateButton == HIGH) {
+
+        lcd.setCursor(10, 1);
+    lcd.print("   ");
+        
+        buttonPushCounter--;
+        Serial.println("--on");
+        Serial.print("number of button pushes: ");
+        Serial.println(buttonPushCounter);
+      } else {
+        Serial.println("-- off");
+      }
+     }
+    }
+    }
+  //0101010101010101010101010101010101010101010//
+    
+
+    lastButtonState = buttonState;
+     lastStateButton = stateButton;
+     lastLockState = lockstate;
+//........................................//
+    if (lock == 1 && buttonPushCounter == 1 && apito==0) {
+      Serial.print("apito");
+      tone(speakerOut, 300, 50);
+      delay(150);
+      tone(speakerOut, 300, 50);
+      apito=1;
+      var = 0;
+      bapito = buttonPushCounter;
+      
+    }
+    if (buttonPushCounter==0 && bapito==1 && apito == 1) {
+      apito =0;
+      var = 0;
+      tone(speakerOut, 250, 500);
+      delay(250);
+      lock = false;  
+    }
+  } 
+
+void locking (){
+  while (var < buttonPushCounter){
+    tone(speakerOut, 600, 50);
+      delay(250);
+    Serial.print(var);
+         var++;
+  }
+}
